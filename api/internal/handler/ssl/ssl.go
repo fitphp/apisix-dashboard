@@ -51,6 +51,35 @@ func NewHandler() (handler.RouteRegister, error) {
 	}, nil
 }
 
+func checkSniExists(rows []interface{}, sni string) bool {
+	for _, item := range rows {
+		ssl := item.(*entity.SSL)
+
+		if ssl.Sni == sni {
+			return true
+		}
+
+		if inArray(sni, ssl.Snis) {
+			return true
+		}
+
+		// Wildcard Domain
+		firstDot := strings.Index(sni, ".")
+		if firstDot > 0 && sni[0:1] != "*" {
+			wildcardDomain := "*" + sni[firstDot:]
+			if ssl.Sni == wildcardDomain {
+				return true
+			}
+
+			if inArray(wildcardDomain, ssl.Snis) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 func (h *Handler) ApplyRoute(r *gin.Engine) {
 	r.GET("/apisix/admin/ssl/:id", wgin.Wraps(h.Get,
 		wrapper.InputType(reflect.TypeOf(GetInput{}))))
@@ -403,40 +432,9 @@ type ExistInput struct {
 	Name string `auto_read:"name,query"`
 }
 
-func toRows(list *store.ListOutput) []store.Row {
-	rows := make([]store.Row, list.TotalSize)
-	for i := range list.Rows {
-		rows[i] = list.Rows[i].(*entity.SSL)
-	}
-	return rows
-}
-
-func checkValueExists(rows []store.Row, field, value string) bool {
-	selector := store.Selector{
-		List:  rows,
-		Query: &store.Query{Filter: store.NewFilter([]string{field, value})},
-	}
-
-	list := selector.Filter().List
-
-	return len(list) > 0
-}
-
-func checkSniExists(rows []store.Row, sni string) bool {
-	if res := checkValueExists(rows, "sni", sni); res {
-		return true
-	}
-	if res := checkValueExists(rows, "snis", sni); res {
-		return true
-	}
-	//extensive domain
-	firstDot := strings.Index(sni, ".")
-	if firstDot > 0 && sni[0:1] != "*" {
-		sni = "*" + sni[firstDot:]
-		if res := checkValueExists(rows, "sni", sni); res {
-			return true
-		}
-		if res := checkValueExists(rows, "snis", sni); res {
+func inArray(key string, array []string) bool {
+	for _, item := range array {
+		if key == item {
 			return true
 		}
 	}
@@ -445,7 +443,7 @@ func checkSniExists(rows []store.Row, sni string) bool {
 }
 
 type ExistCheckInput struct {
-	Body []byte `auto_read:"@body"`
+	Hosts []string
 }
 
 // swagger:operation POST /apisix/admin/check_ssl_exists checkSSLExist
@@ -456,16 +454,13 @@ type ExistCheckInput struct {
 // produces:
 // - application/json
 // parameters:
-// - name: cert
+// - name: hosts
 //   in: body
-//   description: cert of SSL
+//   description: hosts of Route
 //   required: true
-//   type: string
-// - name: key
-//   in: body
-//   description: key of SSL
-//   required: true
-//   type: string
+//   type: array
+//     items:
+//     type: string
 // responses:
 //   '0':
 //     description: SSL exists
@@ -477,11 +472,9 @@ type ExistCheckInput struct {
 //       "$ref": "#/definitions/ApiError"
 func (h *Handler) Exist(c droplet.Context) (interface{}, error) {
 	input := c.Input().(*ExistCheckInput)
-	//temporary
-	reqBody := input.Body
-	var hosts []string
-	if err := json.Unmarshal(reqBody, &hosts); err != nil {
-		return &data.SpecCodeResponse{StatusCode: http.StatusBadRequest}, err
+	if len(input.Hosts) == 0 {
+		return &data.SpecCodeResponse{StatusCode: http.StatusBadRequest},
+			consts.InvalidParam("hosts could not be empty")
 	}
 
 	ret, err := h.sslStore.List(c.Context(), store.ListInput{
@@ -491,12 +484,12 @@ func (h *Handler) Exist(c droplet.Context) (interface{}, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return &data.SpecCodeResponse{StatusCode: http.StatusInternalServerError}, err
 	}
 
-	for _, host := range hosts {
-		res := checkSniExists(toRows(ret), host)
-		if !res {
+	for _, host := range input.Hosts {
+		exist := checkSniExists(ret.Rows, host)
+		if !exist {
 			return &data.SpecCodeResponse{StatusCode: http.StatusNotFound},
 				consts.InvalidParam("SSL cert not exists for sni：" + host)
 		}

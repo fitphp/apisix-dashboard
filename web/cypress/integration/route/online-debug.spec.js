@@ -20,6 +20,7 @@ import routeLocaleUS from '../../../src/pages/Route/locales/en-US';
 import defaultSettings from '../../../config/defaultSettings';
 
 context('Online debug', () => {
+  const { SERVE_ENV = 'dev' } = Cypress.env();
   const data = {
     validUris: [
       'localhost:9000/get',
@@ -37,24 +38,40 @@ context('Online debug', () => {
       'localhost:9000/api/commands/submit.html#Requirements?test=apisix.com',
       'localhost:9000/js6/main.jsp?sid=pARQZYHABxkSVdeMvXAAEtfJKbWQocOA&df=mail126_mailmaster#module=mbox.ListModule%7C%7B',
     ],
-    invalidUrls: [
-      '000'
-    ],
+    invalidUrls: ['000'],
+    postUrl: `${defaultSettings.serveUrlMap[SERVE_ENV].split('//')[1]}/apisix/admin/import/routes`,
+    uploadFile: '../../../api/test/testdata/import/default.json',
+    headerAuthorizationKey: 'Authorization',
+    routeName: 'hello',
+  };
+
+  const domSelector = {
+    debugDraw: '[data-cy=debug-draw]',
+    deubugMethod: '[data-cy=debug-method]',
+    debugProtocol: '[data-cy=debug-protocol]',
+    debugFormDataKey0: '#dynamic_form_data_item_params_0_key',
+    debugFormDataType0: '[data-cy=debug-formdata-type-0]',
+    debugFormDataValue0: '#dynamic_form_data_item_params_0_value',
+    debugFormDataFileButton0: '[data-cy=debug-upload-btn-0]',
+    codeMirrorCode: '.CodeMirror-code',
+    headerDataKey0: '#headerForm_params_0_key',
+    headerDataValue0: '#headerForm_params_0_value',
   };
 
   beforeEach(() => {
     cy.login();
 
     cy.fixture('selector.json').as('domSelector');
+    cy.fixture('data.json').as('data');
+    cy.intercept('/apisix/admin/debug-request-forwarding').as('DebugAPI');
   });
 
-  it('shoule not show the invalid url notification', function () {
+  it('should not show the invalid url notification', function () {
     cy.visit('/');
     cy.contains(menuLocaleUS['menu.routes']).click();
 
     // show online debug draw
     cy.contains(routeLocaleUS['page.route.onlineDebug']).click();
-
     // input uri with specified special characters
     data.validUris.forEach((uri) => {
       cy.get(this.domSelector.debugUri).clear();
@@ -66,7 +83,7 @@ context('Online debug', () => {
     });
   });
 
-  it('shoule not show the invalid url notification', function () {
+  it('should show the invalid url notification', function () {
     cy.visit('/');
     cy.contains(menuLocaleUS['menu.routes']).click();
 
@@ -88,5 +105,63 @@ context('Online debug', () => {
       cy.contains(routeLocaleUS['page.route.input.placeholder.requestUrl']).should('exist');
       cy.get(this.domSelector.notificationCloseIcon).click();
     });
+  });
+
+  it('should debug POST request with file successfully', function () {
+    cy.visit('/');
+    cy.contains(menuLocaleUS['menu.routes']).click();
+    const currentToken = localStorage.getItem('token');
+
+    // show online debug draw
+    cy.contains(routeLocaleUS['page.route.onlineDebug']).click();
+    cy.get(domSelector.debugDraw).should('be.visible');
+
+    // change request method POST
+    cy.get(domSelector.deubugMethod).click();
+    cy.contains('POST').click();
+
+    // change request protocol http
+    cy.get(domSelector.debugProtocol).click();
+    cy.contains('http://').click();
+    // set debug uri
+    cy.get(this.domSelector.debugUri).type(data.postUrl);
+    // set request body
+    cy.contains('Body Params').should('be.visible').click();
+
+    cy.contains('form-data').should('be.visible').click();
+    cy.get(domSelector.debugFormDataKey0).type('file');
+
+    // check change type
+    cy.get(domSelector.debugFormDataType0).click();
+    cy.contains('Text').click();
+    // assert: text input dom should be visible
+    cy.get(domSelector.debugFormDataValue0).should('be.visible');
+    cy.get(domSelector.debugFormDataType0).click();
+    cy.contains('File').click();
+    // assert: upload file button should be visible
+    cy.get(domSelector.debugFormDataFileButton0).should('be.visible');
+    // attach file
+    cy.get(domSelector.debugFormDataValue0).attachFile(data.uploadFile);
+
+    // set header Authorization
+    cy.contains('Header Params').should('be.visible').click();
+    cy.get(domSelector.headerDataKey0).type(data.headerAuthorizationKey);
+    cy.get(domSelector.headerDataValue0).type(currentToken);
+
+    cy.contains(routeLocaleUS['page.route.button.send']).click();
+
+    cy.wait('@DebugAPI');
+    // assert: send request return
+    cy.get(domSelector.codeMirrorCode).contains('data').should('be.visible');
+    cy.get(domSelector.codeMirrorCode).contains('routes').should('be.visible');
+
+    // close debug drawer
+    cy.get(this.domSelector.drawerClose).click();
+
+    // refresh table and delete the route just created
+    cy.get(this.domSelector.refresh).click();
+    cy.contains(data.routeName).siblings().contains('Delete').click();
+    cy.contains('button', 'Confirm').click();
+    cy.get(this.domSelector.notification).should('contain', this.data.deleteRouteSuccess);
   });
 });

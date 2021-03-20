@@ -18,6 +18,7 @@ export default {
   'page.route.button.returnList': 'Goto List',
   'page.route.button.send': 'Send',
   'page.route.onlineDebug': 'Online Debug',
+  'page.route.pluginTemplateConfig': 'Plugin Template Config',
 
   'page.route.parameterPosition': 'Parameter Position',
   'page.route.httpRequestHeader': 'HTTP Request Header',
@@ -41,6 +42,7 @@ export default {
   'page.route.input.placeholder.requestUrl': 'please input the valid request URL',
   'page.route.input.placeholder.paramKey': 'Param Key',
   'page.route.input.placeholder.paramValue': 'Param Value',
+  'page.route.input.placeholder.paramType': 'Param Type',
 
   'page.route.form.itemRulesRequiredMessage.parameterName':
     'Only letters and Numbers are supported, and can only begin with letters',
@@ -132,5 +134,8 @@ export default {
   'page.route.exportRoutesTips': 'Please choose the type of file you want to export',
   'page.route.button.importOpenApi': 'Import OpenAPI',
   'page.route.button.selectFile': 'Please Select File',
-  'page.route.list': 'Route List'
+  'page.route.list': 'Route List',
+
+  'page.route.tabs.normalMode': 'Normal mode',
+  'page.route.tabs.orchestration': 'Plugin orchestration'
 };

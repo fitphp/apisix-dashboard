@@ -21,8 +21,8 @@ import {
   transformStepData,
   transformRouteData,
   transformUpstreamNodes,
-  transformLabelList,
 } from './transform';
+import { transformLabelList } from '@/helpers';
 
 export const create = (data: RouteModule.RequestData) =>
   request(`/routes`, {
@@ -92,12 +92,12 @@ export const fetchUpstreamItem = (sid: string) => {
 export const checkHostWithSSL = (hosts: string[]) =>
   request('/check_ssl_exists', {
     method: 'POST',
-    data: hosts,
+    data: { hosts },
   });
 
 export const fetchLabelList = () =>
   request('/labels/route').then(
-    ({ data }) => transformLabelList(data.rows) as RouteModule.LabelList,
+    ({ data }) => transformLabelList(data.rows) as LabelList,
   );
 
 export const updateRouteStatus = (rid: string, status: RouteModule.RouteStatus) =>
@@ -106,10 +106,11 @@ export const updateRouteStatus = (rid: string, status: RouteModule.RouteStatus) 
     data: { status },
   });
 
-export const debugRoute = (data: RouteModule.debugRequest) => {
+export const debugRoute = (headers, data: RouteModule.debugRequest) => {
   return request('/debug-request-forwarding', {
     method: 'post',
     data,
+    headers,
   });
 };
 

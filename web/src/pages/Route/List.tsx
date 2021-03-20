@@ -49,6 +49,7 @@ import {
   importRoutes,
 } from './service';
 import { DebugDrawView } from './components/DebugViews';
+import { RawDataEditor } from '@/components/RawDataEditor';
 import { EXPORT_FILE_MIME_TYPE_SUPPORTED } from './constants';
 
 const { OptGroup, Option } = Select;
@@ -68,10 +69,12 @@ const Page: React.FC = () => {
     YAML,
   }
 
-  const [labelList, setLabelList] = useState<RouteModule.LabelList>({});
+  const [labelList, setLabelList] = useState<LabelList>({});
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [uploadFileList, setUploadFileList] = useState<RcFile[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [rawDataEditorVisible, setRawDataEditorVisible] = useState(false);
+  const [rawData, setRawData] = useState({});
 
   useEffect(() => {
     fetchLabelList().then(setLabelList);
@@ -314,8 +317,8 @@ const Page: React.FC = () => {
           {record.status ? (
             <Tag color="green">{formatMessage({ id: 'page.route.published' })}</Tag>
           ) : (
-            <Tag color="red">{formatMessage({ id: 'page.route.unpublished' })}</Tag>
-          )}
+              <Tag color="red">{formatMessage({ id: 'page.route.unpublished' })}</Tag>
+            )}
         </>
       ),
       renderFormItem: (_, { type }) => {
@@ -378,6 +381,12 @@ const Page: React.FC = () => {
             <Button type="primary" onClick={() => history.push(`/routes/${record.id}/edit`)}>
               {formatMessage({ id: 'component.global.edit' })}
             </Button>
+            <Button type="primary" onClick={() => {
+              setRawData(record);
+              setRawDataEditorVisible(true);
+            }}>
+              {formatMessage({ id: 'component.global.view' })}
+            </Button>
             <Popconfirm
               title={formatMessage({ id: 'component.global.popconfirm.title.delete' })}
               onConfirm={() => {
@@ -417,6 +426,10 @@ const Page: React.FC = () => {
           resetText: formatMessage({ id: 'component.global.reset' }),
         }}
         toolBarRender={() => [
+          <Button type="primary" onClick={() => { history.push('/plugin-template/list') }}>
+            <PlusOutlined />
+            {formatMessage({ id: 'page.route.pluginTemplateConfig' })}
+          </Button>,
           <Button type="primary" onClick={() => history.push(`/routes/create`)}>
             <PlusOutlined />
             {formatMessage({ id: 'component.global.create' })}
@@ -446,7 +459,13 @@ const Page: React.FC = () => {
           setDebugDrawVisible(false);
         }}
       />
-
+      <RawDataEditor
+        visible={rawDataEditorVisible}
+        type='route'
+        readonly={true}
+        data={rawData}
+        onClose={() => { setRawDataEditorVisible(false) }}
+      />
       <Modal
         title={formatMessage({ id: 'page.route.button.importOpenApi' })}
         visible={showImportModal}
@@ -475,7 +494,7 @@ const Page: React.FC = () => {
           <p>{formatMessage({ id: 'page.route.instructions' })}:</p>
           <p>
             <a
-              href="https://github.com/apache/apisix-dashboard/blob/master/docs/IMPORT_OPENAPI_USER_GUIDE.md"
+              href="https://apisix.apache.org/docs/dashboard/IMPORT_OPENAPI_USER_GUIDE"
               target="_blank"
             >
               1.{' '}

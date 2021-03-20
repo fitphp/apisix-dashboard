@@ -8,6 +8,7 @@
   "drawerBody": ".ant-drawer-wrapper-body",
   "notificationCloseIcon": ".ant-notification-close-icon",
   "notificationDesc": ".ant-notification-notice-description",
+  "errorNotification:": ".ant-notification-notice-error",
 
   "pluginCard": ".ant-card",
   "pageContent": ".ant-pro-page-container",
@@ -39,9 +40,10 @@
   "ruleCard": ".ant-modal",
   "operator": "#operator",
   "value": "#value",
-  
+
   "fileSelector": "[type=file]",
   "fileTypeRadio": "[type=radio]",
+  "fileSelectorClose": ".ant-modal-close",
 
   "debugUri": "#debugUri",
 
@@ -49,6 +51,7 @@
   "labels_0_labelKey": "#labels_0_labelKey",
   "labels_0_labelValue": "#labels_0_labelValue",
   "labelSelector": "[title=Labels]",
+  "labelSelect_0": ".ant-select-selection-overflow",
 
   "pageContainer": ".ant-pro-page-container",
   "notificationMessage": ".ant-notification-notice-message",
@@ -56,5 +59,17 @@
   "grafanaURL": "#grafanaURL",
   "explain": ".ant-form-item-explain",
 
-  "upstreamType": ".ant-select-item-option-content"
+  "upstreamType": ".ant-select-item-option-content",
+
+  "errorExplain": ".ant-form-item-explain",
+  "usernameInput": "#control-ref_username",
+  "passwordInput": "#control-ref_password",
+  "drawer": ".ant-drawer-content",
+  "codemirrorScroll": ".CodeMirror-scroll",
+  "drawerClose": ".ant-drawer-close",
+  "descriptionSelector": "[title=Description]",
+  "customSelector": "[title=Custom]",
+  "notificationClose": ".anticon-close",
+  "redirectURIInput": "#redirectURI",
+  "redirectCodeSelector": "#ret_code"
 }

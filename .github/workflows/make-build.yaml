@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v2.1.4
+        uses: actions/setup-node@v2.1.5
         with:
           node-version: 14.x
 
@@ -41,7 +41,9 @@ jobs:
 
       - name: start dashboard
         working-directory: ./output
-        run: ./manager-api > ./api.log 2>&1 &
+        run: |
+          ./manager-api > ./api.log 2>&1 &
+          sleep 5
 
       - name: check
         run: api/test/shell/manager_smoking.sh -s true

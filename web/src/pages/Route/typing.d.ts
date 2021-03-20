@@ -19,14 +19,6 @@ declare namespace RouteModule {
 
   type VarPosition = 'arg' | 'http' | 'cookie';
 
-  type MatchingRule = {
-    position: VarPosition;
-    name: string;
-    operator: Operator;
-    value: string;
-    key: string;
-  };
-
   type RequestProtocol = 'https' | 'http' | 'websocket';
 
   type BaseData = {
@@ -42,6 +34,7 @@ declare namespace RouteModule {
     plugins: PluginPage.PluginData;
     //  TEMP
     script: any;
+    plugin_config_id?: string
   };
 
   type UpstreamHost = {
@@ -98,6 +91,7 @@ declare namespace RouteModule {
     };
     upstream_id?: string;
     plugins: Record<string, any>;
+    plugin_config_id?: string;
     script: Record<string, any>;
     url?: string;
     enable_websocket?: boolean;
@@ -109,16 +103,6 @@ declare namespace RouteModule {
     name: string;
     operator: Operator;
     value: string;
-    key: string;
-  };
-
-  type ResponseLabelList = Record<string, string>[];
-
-  type LabelList = Record<string, string[]>;
-
-  type LabelTableProps = {
-    labelKey: string;
-    labelValue: string;
     key: string;
   };
 
@@ -151,13 +135,6 @@ declare namespace RouteModule {
 
   type AdvancedMatchingRules = {
     advancedMatchingRules: MatchingRule[];
-  };
-
-  // step2
-  type UpstreamHeader = {
-    key: string;
-    header_name: string;
-    header_value: string;
   };
 
   type Step2PassProps = {
@@ -210,7 +187,6 @@ declare namespace RouteModule {
   };
 
   type ResponseBody = {
-    hosts: string[];
     id: string;
     methods: HttpMethod[];
     name: string;
@@ -258,17 +234,14 @@ declare namespace RouteModule {
   type debugRequestParamsFormData = {
     check: boolean;
     key: string;
-    value: string;
+    value: any;
+    type?: string;
   };
   type DebugViewProps = {
     form: FormInstance;
+    name?: string;
   };
-  type DebugBodyType = 'none' | 'x-www-form-urlencoded' | 'raw input';
-  type DebugDodyViewProps = {
-    form: FormInstance;
-    changeBodyParamsType: (type: DebugBodyType) => void;
-    codeMirrorRef: any;
-  };
+  type DebugBodyType = 'none' | 'x-www-form-urlencoded' | 'raw input' | 'form-data';
   type DebugDrawProps = {
     visible: boolean;
     onClose: () => void;

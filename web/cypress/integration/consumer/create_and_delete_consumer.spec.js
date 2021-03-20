@@ -36,9 +36,11 @@ context('Create and Delete Consumer', () => {
 
     // plugin config
     cy.contains(this.domSelector.pluginCard, 'key-auth').within(() => {
-      cy.get('button').first().click();
+      cy.contains('Enable').click({
+        force: true,
+      });
     });
-
+    cy.focused(this.domSelector.drawer).should('exist');
     cy.get(this.domSelector.disabledSwitcher).click();
     // edit codemirror
     cy.get(this.domSelector.codeMirror)
@@ -54,6 +56,21 @@ context('Create and Delete Consumer', () => {
     cy.contains('button', 'Next').click();
     cy.contains('button', 'Submit').click();
     cy.get(this.domSelector.notification).should('contain', this.data.createConsumerSuccess);
+  });
+
+  it('should view the consumer', function () {
+    cy.visit('/');
+    cy.contains('Consumer').click();
+
+    cy.get(this.domSelector.nameSelector).type(this.data.consumerName);
+    cy.contains('Search').click();
+    cy.contains(this.data.consumerName).siblings().contains('View').click();
+    cy.get(this.domSelector.drawer).should('be.visible');
+
+    cy.get(this.domSelector.codemirrorScroll).within(() => {
+      cy.contains('plugins').should('exist');
+      cy.contains(this.data.consumerName).should('exist');
+    });
   });
 
   it('delete the consumer', function () {
@@ -76,7 +93,9 @@ context('Create and Delete Consumer', () => {
 
     // plugin config
     cy.contains(this.domSelector.pluginCard, 'key-auth').within(() => {
-      cy.get('button').first().click();
+      cy.get('button').click({
+        force: true,
+      });
     });
     // edit codeMirror
     cy.get(this.domSelector.codeMirror)

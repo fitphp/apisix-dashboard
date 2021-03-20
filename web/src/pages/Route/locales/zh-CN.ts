@@ -41,6 +41,7 @@ export default {
   'page.route.published': '已发布',
   'page.route.unpublished': '未发布',
   'page.route.onlineDebug': '在线调试',
+  'page.route.pluginTemplateConfig': '插件模版配置',
   'page.route.service': '服务',
   'page.route.instructions': '说明',
   'page.route.import': '导入',
@@ -55,6 +56,7 @@ export default {
   'page.route.input.placeholder.redirectCustom': '例如：/foo/index.html',
   'page.route.input.placeholder.requestUrl': '请输入合法的请求地址',
   'page.route.input.placeholder.paramKey': '参数名称',
+  'page.route.input.placeholder.paramType': '参数类型',
   'page.route.input.placeholder.paramValue': '参数值',
   // form
   'page.route.form.itemRulesRequiredMessage.parameterName': '仅支持字母和数字，且只能以字母开头',
@@ -132,5 +134,8 @@ export default {
   'page.route.exportRoutesTips': '请选择导出文件的类型',
   'page.route.button.importOpenApi': '导入 OpenAPI',
   'page.route.button.selectFile': '请选择上传文件',
-  'page.route.list': '路由列表'
+  'page.route.list': '路由列表',
+
+  'page.route.tabs.normalMode': '普通模式',
+  'page.route.tabs.orchestration': '插件编排'
 };
